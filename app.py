@@ -1,12 +1,23 @@
 import sqlite3
 import os
+import shutil
 import uuid
 from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
-DB_PATH = os.path.join(os.path.dirname(__file__), 'delhi_darshan.db')
+
+# Handle writable DB path in serverless environments like Vercel
+BASE_DB = os.path.join(os.path.dirname(__file__), 'delhi_darshan.db')
+if os.environ.get('VERCEL'):
+    DB_PATH = '/tmp/delhi_darshan.db'
+    if not os.path.exists(DB_PATH) and os.path.exists(BASE_DB):
+        shutil.copyfile(BASE_DB, DB_PATH)
+else:
+    DB_PATH = BASE_DB
 
 def get_db_connection():
+    if os.environ.get('VERCEL') and not os.path.exists(DB_PATH) and os.path.exists(BASE_DB):
+        shutil.copyfile(BASE_DB, DB_PATH)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn

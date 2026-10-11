@@ -43,7 +43,19 @@ def init_db():
             latitude REAL,
             longitude REAL,
             rating REAL DEFAULT 4.5,
+            rating_count INTEGER DEFAULT 120,
             FOREIGN KEY (zone_code) REFERENCES zones (code)
+        )
+    ''')
+
+    # Create Ratings Table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS ratings (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            place_id INTEGER NOT NULL,
+            rating INTEGER NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (place_id) REFERENCES places (id)
         )
     ''')
 
@@ -346,19 +358,28 @@ def init_db():
         )
     ]
 
-    # Clean up typo in tuple if any
+    # Realistic review counts based on popular Delhi tourist footfall
+    rating_counts = [
+        385, 412, 265, 198, 174, 142, 230,
+        390, 520, 340, 295, 480, 310, 220, 185,
+        495, 360, 430, 215, 275,
+        310, 240, 95,
+        560, 130,
+        280, 225
+    ]
+
     clean_places = []
-    for p in places_data:
-        # replace any leftover syntax artifacts
-        clean_places.append(p)
+    for idx, p in enumerate(places_data):
+        count = rating_counts[idx] if idx < len(rating_counts) else 120
+        clean_places.append(p + (count,))
 
     cursor.executemany('''
         INSERT INTO places (
             name, zone_code, category, description,
             fee_indian_adult, fee_indian_child, fee_foreigner_adult, fee_foreigner_child, camera_fee,
             timing_open, timing_close, closed_on, recommended_duration_mins,
-            nearest_metro, best_time_to_visit, image_url, latitude, longitude, rating
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            nearest_metro, best_time_to_visit, image_url, latitude, longitude, rating, rating_count
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', clean_places)
 
     conn.commit()

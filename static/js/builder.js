@@ -77,7 +77,7 @@ function renderItinerary(data) {
                             <div>
                                 <div class="place-meta-top">
                                     <span class="time-slot-tag"><i class="fa-regular fa-clock"></i> ${item.start_time} (${p.recommended_duration_mins} mins)</span>
-                                    <span class="rating-tag"><i class="fa-solid fa-star"></i> ${p.rating}</span>
+                                    <span class="rating-tag" onclick="openPlaceModal(${p.id})" title="Click to view details & rate destination" style="cursor:pointer;"><i class="fa-solid fa-star text-gold"></i> ${Number(p.rating).toFixed(1)} <small style="opacity:0.85; font-size:0.75rem;">(${p.rating_count || 120})</small></span>
                                 </div>
                                 <h3 class="place-title" onclick="openPlaceModal(${p.id})" style="cursor:pointer;">${p.name}</h3>
                                 <p class="place-desc">${p.description}</p>

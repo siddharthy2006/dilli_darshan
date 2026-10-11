@@ -22,6 +22,30 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+def init_db_schema():
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("PRAGMA table_info(places)")
+        cols = [c[1] for c in cursor.fetchall()]
+        if 'rating_count' not in cols:
+            cursor.execute("ALTER TABLE places ADD COLUMN rating_count INTEGER DEFAULT 120")
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS ratings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                place_id INTEGER NOT NULL,
+                rating INTEGER NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (place_id) REFERENCES places (id)
+            )
+        ''')
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"Schema check error: {e}")
+
+init_db_schema()
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -93,6 +117,55 @@ def get_place(place_id):
         return jsonify({'error': 'Place not found'}), 404
         
     return jsonify(dict(place))
+
+@app.route('/api/places/<int:place_id>/rate', methods=['POST'])
+def rate_place(place_id):
+    data = request.json or {}
+    try:
+        user_rating = float(data.get('rating', 0))
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Invalid rating value'}), 400
+
+    if user_rating < 1 or user_rating > 5:
+        return jsonify({'error': 'Rating must be between 1 and 5 stars'}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    place = cursor.execute("SELECT * FROM places WHERE id = ?", (place_id,)).fetchone()
+    if not place:
+        conn.close()
+        return jsonify({'error': 'Place not found'}), 404
+
+    place_dict = dict(place)
+    current_rating = float(place_dict.get('rating') or 4.5)
+    current_count = int(place_dict.get('rating_count') or 120)
+
+    new_count = current_count + 1
+    new_rating = round(((current_rating * current_count) + user_rating) / new_count, 1)
+
+    cursor.execute('''
+        UPDATE places 
+        SET rating = ?, rating_count = ? 
+        WHERE id = ?
+    ''', (new_rating, new_count, place_id))
+
+    cursor.execute('''
+        INSERT INTO ratings (place_id, rating) 
+        VALUES (?, ?)
+    ''', (place_id, int(round(user_rating))))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        'success': True,
+        'place_id': place_id,
+        'rating': new_rating,
+        'rating_count': new_count,
+        'user_rating': user_rating,
+        'message': 'Rating submitted successfully!'
+    })
 
 @app.route('/api/generate-itinerary', methods=['POST'])
 def generate_itinerary():
@@ -248,7 +321,7 @@ def get_itinerary(itinerary_id):
 
     items = cursor.execute('''
         SELECT ii.*, p.name, p.zone_code, p.category, p.description, p.fee_indian_adult, p.fee_foreigner_adult,
-               p.timing_open, p.timing_close, p.closed_on, p.recommended_duration_mins, p.nearest_metro, p.image_url, p.rating
+               p.timing_open, p.timing_close, p.closed_on, p.recommended_duration_mins, p.nearest_metro, p.image_url, p.rating, p.rating_count
         FROM itinerary_items ii
         JOIN places p ON ii.place_id = p.id
         WHERE ii.itinerary_id = ?
@@ -290,7 +363,8 @@ def get_itinerary(itinerary_id):
                 'recommended_duration_mins': r['recommended_duration_mins'],
                 'nearest_metro': r['nearest_metro'],
                 'image_url': r['image_url'],
-                'rating': r['rating']
+                'rating': r['rating'],
+                'rating_count': r['rating_count']
             },
             'start_time': r['start_time'],
             'duration_mins': r['recommended_duration_mins'],

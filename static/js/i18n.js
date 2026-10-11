@@ -76,7 +76,24 @@ const translations = {
         under_budget: "Under Budget",
         over_budget: "Over Budget",
         saved_balance: "Remaining",
-        shortfall: "Shortfall"
+        shortfall: "Shortfall",
+
+        rate_destination: "Rate Destination",
+        rate_subtitle: "Share your rating to help fellow travelers",
+        your_rating: "Your Rating",
+        rate_label: "Rate",
+        tap_to_rate: "Tap a star to rate",
+        reviews: "reviews",
+        rate_poor: "Poor",
+        rate_fair: "Fair",
+        rate_good: "Good",
+        rate_very_good: "Very Good",
+        rate_excellent: "Excellent",
+        rating_submitted: "Rating submitted! Thank you!",
+        sort_rating_high: "Top Rated (Highest First)",
+        sort_rating_low: "Lowest Rated",
+        sort_name_az: "Name (A-Z)",
+        sort_fee_low: "Entry Fee (Low to High)"
     },
     hi: {
         brand_sub: "दिल्ली यात्रा एवं बजट योजनाकार",
@@ -148,7 +165,24 @@ const translations = {
         under_budget: "बजट में",
         over_budget: "बजट से अधिक",
         saved_balance: "शेष",
-        shortfall: "कमतर"
+        shortfall: "कमतर",
+
+        rate_destination: "गंतव्य को रेट करें",
+        rate_subtitle: "अन्य पर्यटकों की मदद के लिए अपनी रेटिंग दें",
+        your_rating: "आपकी रेटिंग",
+        rate_label: "रेट करें",
+        tap_to_rate: "रेट करने के लिए स्टार चुनें",
+        reviews: "समीक्षाएं",
+        rate_poor: "खराब",
+        rate_fair: "ठीक",
+        rate_good: "अच्छा",
+        rate_very_good: "बहुत अच्छा",
+        rate_excellent: "उत्कृष्ट",
+        rating_submitted: "रेटिंग दर्ज की गई! धन्यवाद!",
+        sort_rating_high: "उच्चतम रेटिंग",
+        sort_rating_low: "न्यूनतम रेटिंग",
+        sort_name_az: "नाम (A-Z)",
+        sort_fee_low: "प्रवेश शुल्क (कम से अधिक)"
     }
 };
 

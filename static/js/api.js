@@ -57,5 +57,19 @@ const API = {
             console.error('Failed to fetch itinerary:', err);
             return null;
         }
+    },
+
+    async ratePlace(id, rating) {
+        try {
+            const res = await fetch(`/api/places/${id}/rate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rating: Number(rating) })
+            });
+            return await res.json();
+        } catch (err) {
+            console.error('Failed to rate destination:', err);
+            return null;
+        }
     }
 };
